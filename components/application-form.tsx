@@ -1,4 +1,4 @@
-import { Application } from "@/lib/generated/prisma";
+import { Application } from "@prisma/client";
 import { applicationStatusLabels, applicationStatuses, channels } from "@/lib/constants";
 import { toDateInput } from "@/lib/format";
 

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
   binaryTargets = ["native", "windows", "darwin", "darwin-arm64"]
 }
 
@@ -9,36 +10,36 @@ datasource db {
 }
 
 model Application {
-  id              String            @id @default(cuid())
+  id              String   @id @default(cuid())
   company         String
   jobTitle        String
   location        String?
   jobUrl          String?
   applicationDate DateTime
   channel         String?
-  status          String            @default("applied")
+  status          String   @default("applied")
   notes           String?
   resumePath      String?
   resumeName      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   stages          Stage[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
 
   @@index([status])
   @@index([applicationDate])
 }
 
 model Stage {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   applicationId String
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   name          String
   scheduledAt   DateTime?
-  status        String      @default("pending")
+  status        String   @default("pending")
   notes         String?
   order         Int
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@index([applicationId, order])
   @@index([scheduledAt])
