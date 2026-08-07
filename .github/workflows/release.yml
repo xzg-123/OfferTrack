@@ -19,9 +19,10 @@ jobs:
       - run: npm ci
       - run: npm run db:generate
       - run: npm run dist:win
-      - uses: softprops/action-gh-release@v2
+      - uses: actions/upload-artifact@v4
         with:
-          files: release/OfferTrack-Setup-*.exe
+          name: windows-installer
+          path: release/OfferTrack-Setup-*.exe
 
   macos:
     runs-on: macos-latest
@@ -34,8 +35,26 @@ jobs:
       - run: npm ci
       - run: npm run db:generate
       - run: npm run dist:mac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: release/OfferTrack-*.dmg
+
+  release:
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: release
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-installers
+          path: release
       - uses: softprops/action-gh-release@v2
         with:
           files: |
+            release/OfferTrack-Setup-*.exe
             release/OfferTrack-*-arm64.dmg
             release/OfferTrack-*-x64.dmg
