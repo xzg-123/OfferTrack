@@ -1,0 +1,19 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+type CalendarEvent = { id: string; name: string; scheduledAt: string; applicationId: string; company: string; jobTitle: string };
+
+function dateKey(value: Date) { return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`; }
+
+export function UpcomingCalendar({ events }: { events: CalendarEvent[] }) {
+  const today = new Date();
+  const [month, setMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selected, setSelected] = useState(dateKey(today));
+  const eventsByDate = useMemo(() => events.reduce<Record<string, CalendarEvent[]>>((result, event) => { const key = dateKey(new Date(event.scheduledAt)); (result[key] ??= []).push(event); return result; }, {}), [events]);
+  const firstWeekday = (month.getDay() + 6) % 7;
+  const days = Array.from({ length: firstWeekday + new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate() }, (_, index) => index < firstWeekday ? null : new Date(month.getFullYear(), month.getMonth(), index - firstWeekday + 1));
+  const selectedEvents = eventsByDate[selected] ?? [];
+  return <div className="card overflow-hidden"><div className="flex items-center justify-between border-b border-slate-100 px-5 py-4"><div><h2 className="font-semibold text-slate-900">即将到来</h2><p className="mt-0.5 text-xs text-slate-500">点击日期查看当天的笔试、测评与面试</p></div><div className="flex items-center gap-2"><button className="button-secondary !px-2 !py-1" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="上个月">‹</button><span className="min-w-24 text-center text-sm font-medium text-slate-800">{month.toLocaleDateString("zh-CN", { year: "numeric", month: "long" })}</span><button className="button-secondary !px-2 !py-1" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="下个月">›</button></div></div><div className="grid grid-cols-7 border-b border-slate-100 px-3 pt-3 text-center text-xs font-medium text-slate-400">{["一", "二", "三", "四", "五", "六", "日"].map((day) => <span className="pb-2" key={day}>周{day}</span>)}</div><div className="grid grid-cols-7 gap-1 px-3 pb-3">{days.map((day, index) => { if (!day) return <div className="h-12" key={`empty-${index}`} />; const key = dateKey(day); const count = eventsByDate[key]?.length ?? 0; const isSelected = key === selected; const isToday = key === dateKey(today); return <button key={key} onClick={() => setSelected(key)} className={`relative h-12 rounded-lg text-sm transition ${isSelected ? "bg-indigo-600 font-semibold text-white" : "hover:bg-indigo-50"} ${isToday && !isSelected ? "font-semibold text-indigo-700" : "text-slate-700"}`}><span>{day.getDate()}</span>{count > 0 && <span className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${isSelected ? "bg-white" : "bg-indigo-500"}`} />}</button>; })}</div><div className="border-t border-slate-100 bg-slate-50 px-5 py-4"><p className="text-sm font-medium text-slate-800">{new Date(`${selected}T00:00:00`).toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "long" })}</p>{selectedEvents.length === 0 ? <p className="mt-2 text-sm text-slate-500">当天没有已安排的流程。</p> : <div className="mt-3 space-y-2">{selectedEvents.map((event) => <Link href={`/applications/${event.applicationId}`} key={event.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm hover:ring-1 hover:ring-indigo-200"><span><strong className="text-slate-900">{event.company}</strong><span className="text-slate-500"> · {event.name}</span></span><span className="text-slate-500">{new Date(event.scheduledAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })}</span></Link>)}</div>}</div></div>;
+}

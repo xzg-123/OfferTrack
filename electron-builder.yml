@@ -1,0 +1,31 @@
+appId: com.offertrack.desktop
+productName: OfferTrack
+directories:
+  output: release
+files:
+  - "app/**/*"
+  - "components/**/*"
+  - "lib/**/*"
+  - "prisma/**/*"
+  - "public/**/*"
+  - ".next/**/*"
+  - "electron/**/*"
+  - "package.json"
+asar: true
+asarUnpack:
+  - "lib/generated/prisma/**"
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: "OfferTrack-Setup-${version}.${ext}"
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  artifactName: "OfferTrack-${version}-${arch}.${ext}"
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true

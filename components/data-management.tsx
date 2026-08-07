@@ -1,0 +1,12 @@
+"use client";
+
+import { useState } from "react";
+
+export function DataManagement() {
+  const [message, setMessage] = useState("");
+  const desktop = typeof window !== "undefined" && Boolean(window.offertrack?.desktop);
+  async function exportBackup() { const result = await window.offertrack?.data.exportBackup(); if (!result?.canceled) setMessage(`已导出 ${result?.count ?? 0} 条投递记录。`); }
+  async function importBackup() { if (!window.confirm("导入会完全覆盖当前电脑上的 OfferTrack 数据，确定继续吗？")) return; try { const result = await window.offertrack?.data.importBackup(); if (!result?.canceled) { setMessage(`已导入 ${result?.count ?? 0} 条投递记录，正在刷新…`); window.setTimeout(() => window.location.assign("/"), 900); } } catch (error) { setMessage(error instanceof Error ? error.message : "导入失败，请确认备份文件完整。 "); } }
+  async function openFolder() { const result = await window.offertrack?.data.openFolder(); if (result?.result) setMessage(`无法打开文件夹：${result.result}`); }
+  return <div className="card max-w-3xl overflow-hidden"><div className="border-b border-slate-100 px-6 py-5"><h2 className="font-semibold text-slate-900">数据备份与恢复</h2><p className="mt-1 text-sm leading-6 text-slate-500">你的数据仅保存于当前电脑。建议在系统重装或更换电脑前导出备份。</p></div>{desktop ? <div className="divide-y divide-slate-100"><div className="flex flex-col justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center"><div><p className="font-medium text-slate-900">导出数据备份</p><p className="mt-1 text-sm text-slate-500">导出包含投递、阶段、备注和简历附件的 JSON 文件。</p></div><button className="button-secondary shrink-0" onClick={exportBackup}>导出备份</button></div><div className="flex flex-col justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center"><div><p className="font-medium text-slate-900">导入数据备份</p><p className="mt-1 text-sm text-slate-500">会完全替换当前设备上的所有 OfferTrack 数据。</p></div><button className="button-danger shrink-0" onClick={importBackup}>导入并覆盖</button></div><div className="flex flex-col justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center"><div><p className="font-medium text-slate-900">打开数据文件夹</p><p className="mt-1 text-sm text-slate-500">查看本机数据库和已上传的简历附件。</p></div><button className="button-secondary shrink-0" onClick={openFolder}>打开文件夹</button></div></div> : <div className="px-6 py-8 text-sm leading-6 text-slate-500">数据备份功能仅在已安装的 OfferTrack 桌面应用中可用。开发模式下，请使用桌面构建进行测试。</div>}{message && <p className="border-t border-slate-100 bg-indigo-50 px-6 py-3 text-sm text-indigo-800">{message}</p>}</div>;
+}
